@@ -49,7 +49,7 @@ current Vaadin 7.7.x and current browsers:
 
 ## Things to check in your real pom (real world project)
 
-* **`vaadin-cdi` Use version 1.9.0 which is Vaadin 7 and Jakarta compatible.
+* **`vaadin-cdi`** Use version 1.9.0 which is Vaadin 7 and Jakarta compatible.
 * **Other add-ons** need checking one by one for `javax.*` server-side usage, for example:
   `jdeps -verbose:class some-addon.jar | grep 'javax\.'`
   Most UI add-ons use only Vaadin APIs and work as they are. Anything that touches
