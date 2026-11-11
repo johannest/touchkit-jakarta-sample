@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>touchkit-jakarta-sample</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <properties>
+        <!-- Vaadin 7.7 extended maintenance (commercial). Jakarta builds exist from 7.7.36 on. -->
+        <vaadin.version>7.7.55</vaadin.version>
+        <touchkit.version>4.1.0</touchkit.version>
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <failOnMissingWebXml>false</failOnMissingWebXml>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>vaadin-addons</id>
+            <url>https://maven.vaadin.com/vaadin-addons</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <!--
+          Jakarta (Servlet 5/6) build of the Vaadin 7.7 server. Contains the same
+          com.vaadin.server.* classes as vaadin-server, compiled against jakarta.servlet.
+          It REPLACES vaadin-server - vaadin-server must not end up in the WAR.
+        -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-server-mpr-jakarta</artifactId>
+            <version>${vaadin.version}</version>
+        </dependency>
+        <!-- Jakarta build of vaadin-push (Atmosphere for jakarta.servlet) -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-push-jakarta</artifactId>
+            <version>${vaadin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-themes</artifactId>
+            <version>${vaadin.version}</version>
+        </dependency>
+
+        <!--
+          TouchKit 4.1.0 is used as-is. Only its TouchKitServlet references javax.servlet;
+          the app uses a Jakarta copy of it instead (see JakartaTouchKitServlet).
+          vaadin-server is "provided" in TouchKit's pom, so it is not pulled in.
+        -->
+        <dependency>
+            <groupId>com.vaadin.addon</groupId>
+            <artifactId>vaadin-touchkit-agpl</artifactId>
+            <version>${touchkit.version}</version>
+        </dependency>
+
+        <!-- Client side, only needed for compiling the widgetset. Never deployed. -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-client</artifactId>
+            <version>${vaadin.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <!-- the javax version of the server; we use vaadin-server-mpr-jakarta -->
+                <exclusion>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>vaadin-server</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-client-compiler</artifactId>
+            <version>${vaadin.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>vaadin-server</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Jakarta EE 10 (Payara 6) -->
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-web-api</artifactId>
+            <version>10.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <packagingExcludes>WEB-INF/classes/VAADIN/gwt-unitCache/**,WEB-INF/classes/VAADIN/widgetsets/WEB-INF/**</packagingExcludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-maven-plugin</artifactId>
+                <version>${vaadin.version}</version>
+                <configuration>
+                    <extraJvmArgs>-Xmx1G -Xss1024k</extraJvmArgs>
+                    <webappDirectory>${basedir}/target/classes/VAADIN/widgetsets</webappDirectory>
+                    <hostedWebapp>${basedir}/target/classes/VAADIN/widgetsets</hostedWebapp>
+                    <draftCompile>false</draftCompile>
+                    <compileReport>false</compileReport>
+                    <style>OBF</style>
+                    <strict>true</strict>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>update-widgetset</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
