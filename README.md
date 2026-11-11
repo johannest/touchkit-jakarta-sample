@@ -49,10 +49,7 @@ current Vaadin 7.7.x and current browsers:
 
 ## Things to check in your real pom (real world project)
 
-* **`vaadin-cdi` 3.0.1** (and `cdi-mvp` on top of it) is built against `javax.enterprise` / `javax.servlet`
-  (Java EE 7). There is no Jakarta release of the Vaadin 7 CDI integration. The options are to drop it,
-  using a plain `@WebServlet` and getting beans via `CDI.current().select(...)` or
-  `@Inject` in the servlet, or to port the few classes the app needs.
+* **`vaadin-cdi` Use version 1.9.0 which is Vaadin 7 and Jakarta compatible.
 * **Other add-ons** need checking one by one for `javax.*` server-side usage, for example:
   `jdeps -verbose:class some-addon.jar | grep 'javax\.'`
   Most UI add-ons use only Vaadin APIs and work as they are. Anything that touches
