@@ -47,20 +47,17 @@ current Vaadin 7.7.x and current browsers:
   bootstrap page, which reports status `UNCACHED`. A side effect is that TouchKit's offline mode / app cache
   can't work in modern browsers anymore, with or without this stub.
 
-## Things to check in the customer's real pom
+## Things to check in your real pom (real world project)
 
 * **`vaadin-cdi` 3.0.1** (and `cdi-mvp` on top of it) is built against `javax.enterprise` / `javax.servlet`
   (Java EE 7). There is no Jakarta release of the Vaadin 7 CDI integration. The options are to drop it,
   using a plain `@WebServlet` and getting beans via `CDI.current().select(...)` or
   `@Inject` in the servlet, or to port the few classes the app needs.
-* **Other add-ons** (crudui, maddon, filteringtable, exporter, tableexport, vaadin-charts 2,
-  POI 3.9, …) need checking one by one for `javax.*` server-side usage, for example:
+* **Other add-ons** need checking one by one for `javax.*` server-side usage, for example:
   `jdeps -verbose:class some-addon.jar | grep 'javax\.'`
   Most UI add-ons use only Vaadin APIs and work as they are. Anything that touches
   `javax.servlet`, `javax.inject`, `javax.enterprise` or `javax.annotation` needs a Jakarta
   replacement or a port.
-* The `maven-antrun` "zip -d *TagSupport*" step and the `tomcat-jsp-api` dependency are
-  workarounds for javax jars on the classpath. They should become unnecessary once the jars above are fixed.
 * `vaadin-server-mpr-jakarta` validates the **Vaadin commercial license** at runtime. The
   production server needs a license key (server/offline key). See the Vaadin license docs.
 
