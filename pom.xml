@@ -11,7 +11,8 @@
     <properties>
         <!-- Vaadin 7.7 extended maintenance (commercial). Jakarta builds exist from 7.7.36 on. -->
         <vaadin.version>7.7.55</vaadin.version>
-        <touchkit.version>4.1.0</touchkit.version>
+        <!-- TouchKit 4.2.x is only published under CVAL (commercial). -->
+        <touchkit.version>4.2.6</touchkit.version>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
@@ -48,14 +49,23 @@
         </dependency>
 
         <!--
-          TouchKit 4.1.0 is used as-is. Only its TouchKitServlet references javax.servlet;
+          TouchKit 4.2.6 is used as-is. Only its TouchKitServlet references javax.servlet;
           the app uses a Jakarta copy of it instead (see JakartaTouchKitServlet).
           vaadin-server is "provided" in TouchKit's pom, so it is not pulled in.
         -->
         <dependency>
             <groupId>com.vaadin.addon</groupId>
-            <artifactId>vaadin-touchkit-agpl</artifactId>
+            <artifactId>vaadin-touchkit-cval</artifactId>
             <version>${touchkit.version}</version>
+        </dependency>
+        <!--
+          TouchKit 4.2.x uses commons-io (IOUtils, for the PWA service worker setup
+          in TouchKitSettings) but does not declare it as a dependency.
+        -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.22.0</version>
         </dependency>
 
         <!-- Client side, only needed for compiling the widgetset. Never deployed. -->

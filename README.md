@@ -1,6 +1,6 @@
-# Vaadin 7.7 + TouchKit 4.1.0 on Jakarta EE 10 (Payara 6, JDK 17+)
+# Vaadin 7.7 + TouchKit 4.2.6 on Jakarta EE 10 (Payara 6, JDK 17+)
 
-A minimal sample showing that a Vaadin 7.7 / TouchKit 4.1.0 app runs on Payara 6
+A minimal sample showing that a Vaadin 7.7 / TouchKit 4.2.6 app runs on Payara 6
 (Servlet 6.0). It has been tested on Payara Micro 6.2025.11, Corretto 21, compiled with `--release 17`.
 It covers TouchKit navigation, form components, a server round trip and `@Push`.
 
@@ -27,25 +27,31 @@ is a 1:1 copy, with `javax.servlet` changed to `jakarta.servlet`. Use it whereve
 application extends or references `TouchKitServlet`, in `@WebServlet` or `web.xml`. The TouchKit
 jar itself stays unchanged.
 
-### 3. Two fixes that are needed regardless of Jakarta
+### 3. Use TouchKit 4.2.6 (`vaadin-touchkit-cval`)
 
-You only see these once the servlet works. They would also break a javax deployment on
-current Vaadin 7.7.x and current browsers:
+TouchKit 4.2.x is published only as `com.vaadin.addon:vaadin-touchkit-cval` (commercial CVAL
+license). The AGPL line (`vaadin-touchkit-agpl`) ends at 4.1.0. 4.2.6 fixes two problems that
+break 4.1.0 on current Vaadin 7.7.x and current browsers, with or without Jakarta:
 
 * **jsoup incompatibility (server, HTTP 500 at bootstrap).** Recent 7.7.x versions ship jsoup 1.2x.
   TouchKit 4.1.0 calls two jsoup constructors that have since been removed, which throws
   `NoSuchMethodError: org.jsoup.nodes.DocumentType.<init>(String,String,String,String)`.
-  The fix is patched copies of
-  [`ViewPortSettings`](src/main/java/com/vaadin/addon/touchkit/settings/ViewPortSettings.java) and
-  [`ApplicationCacheSettings`](src/main/java/com/vaadin/addon/touchkit/settings/ApplicationCacheSettings.java)
-  under the same package. `WEB-INF/classes` loads before `WEB-INF/lib`, so these copies win.
-  Each copy has a one-line change, marked `PATCH`.
-* **HTML5 AppCache removed from browsers (client, blank page).** TouchKit's client calls
+  4.2.6 uses the current constructors.
+* **HTML5 AppCache removed from browsers (client, blank page).** TouchKit 4.1.0's client calls
   `window.applicationCache`. Current Chrome / Android WebView, Firefox and Safari no longer
   have it, so the browser throws `Cannot read properties of undefined (reading 'addEventListener')`
-  and the UI never renders. `JakartaTouchKitServlet` injects a small no-op stub into the
-  bootstrap page, which reports status `UNCACHED`. A side effect is that TouchKit's offline mode / app cache
-  can't work in modern browsers anymore, with or without this stub.
+  and the UI never renders. In 4.2.6 the cache manifest is always disabled and the client
+  checks for `window.applicationCache` before using it. As a result, TouchKit's
+  offline mode / app cache doesn't work in modern browsers.
+
+4.2.x uses `commons-io` (in `TouchKitSettings`, for its PWA / service worker support) but
+doesn't declare it in its pom. Add `commons-io:commons-io` to the app yourself, otherwise the
+bootstrap fails with `ClassNotFoundException: org.apache.commons.io.IOUtils` for every
+Chrome, Firefox or Safari user agent.
+
+If you have to stay on 4.1.0, both need local workarounds (patched copies of
+`ViewPortSettings` / `ApplicationCacheSettings`, and a no-op `window.applicationCache` stub
+injected into the bootstrap page). Upgrading is simpler.
 
 ## Things to check in your real pom (real world project)
 
@@ -57,6 +63,8 @@ current Vaadin 7.7.x and current browsers:
   replacement or a port.
 * `vaadin-server-mpr-jakarta` validates the **Vaadin commercial license** at runtime. The
   production server needs a license key (server/offline key). See the Vaadin license docs.
+* `vaadin-touchkit-cval` is a CVAL add-on, so compiling the widgetset needs a valid Vaadin
+  license as well.
 
 ## Build & run
 
